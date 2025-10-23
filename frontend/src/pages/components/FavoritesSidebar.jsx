@@ -16,7 +16,7 @@ const SidebarItem = ({ product }) => (
         {/* Product Image */}
         <div className="w-16 h-16 mr-3 shrink-0">
             <img 
-                src={"https://i.imgur.com/5J3wB2f.png"} // Placeholder for laptop thumbnail
+                src={" https://m.media-amazon.com/images/I/510uTHyDqGL.jpg"} // Placeholder for laptop thumbnail
                 alt={product.name} 
                 className="w-full h-full object-contain" 
             />

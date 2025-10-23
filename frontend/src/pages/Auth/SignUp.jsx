@@ -29,7 +29,7 @@ const SignUp = () => {
             const response = await handleSignUp(values);
             if (response.success) {
                 toast.success("Account created successfully!");
-                navigate("/home");
+                navigate("/");
             } else {
                 toast.error(response.message);
             }

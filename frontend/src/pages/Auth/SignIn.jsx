@@ -28,7 +28,7 @@ const SignIn = () => {
             if (response.success) {
                 localStorage.setItem("token", response.token);
                 toast.success("Signed in successfully!");
-                navigate("/home");
+                navigate("/");
             } else {
                 toast.error(response.message);
             }
