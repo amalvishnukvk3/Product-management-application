@@ -3,9 +3,11 @@ import { useState } from "react";
 import { FaChevronRight } from "react-icons/fa";
 import AddProductModal from "./AddProductModal";
 import AddCategoryModal from "./AddCategoryModal";
+import AddSubCategoryModal from "./AddSubCategoryModal";
 
 const SubHeader = () => {
   const [openCategoryModal, setOpenCategoryModal] = useState(false);
+  const [openSubCategoryModal, setOpenSubCategoryModal] = useState(false);
   const [openProductModal, setOpenProductModal] = useState(false);
 
 
@@ -25,7 +27,8 @@ const SubHeader = () => {
         >
           Add category
         </button>
-        <button className="bg-[#F6A01A] text-white px-4 py-2 rounded-md w-full sm:w-auto cursor-pointer">
+        <button onClick={() => setOpenSubCategoryModal(true)}
+          className="bg-[#F6A01A] text-white px-4 py-2 rounded-md w-full sm:w-auto cursor-pointer">
           Add sub category
         </button>
         <button
@@ -37,6 +40,7 @@ const SubHeader = () => {
       </div>
 
       {openCategoryModal && <AddCategoryModal onClose={() => setOpenCategoryModal(false)} />}
+      {openSubCategoryModal && <AddSubCategoryModal onClose={() => setOpenSubCategoryModal(false)} />}
       {openProductModal && <AddProductModal onClose={() => setOpenProductModal(false)} />}
     </div>
   );
