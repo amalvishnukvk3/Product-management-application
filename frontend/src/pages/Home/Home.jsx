@@ -6,6 +6,7 @@ import Navbar from "../components/Navbar";
 import SubHeader from "../components/SubHeader";
 
 const products = Array(6).fill({
+    id:"4124564%$DFR3",
     image: "https://m.media-amazon.com/images/I/510uTHyDqGL.jpg",
     name: "HP AMD Ryzen 3",
     price: "529.99",
