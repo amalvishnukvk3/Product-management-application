@@ -1,6 +1,7 @@
-import { useNavigate } from "react-router-dom";
-
 // @ts-nocheck
+import { useNavigate } from "react-router-dom";
+import { FaHeart, FaShoppingCart, FaRegStar, FaStar, FaTimes } from "react-icons/fa";
+
 export default function ProductCard({ product }) {
   const navigate = useNavigate();
 
@@ -19,10 +20,8 @@ export default function ProductCard({ product }) {
         {product.name}
       </h3>
       <p className="font-bold text-sm sm:text-base md:text-lg">${product.price}</p>
-      <div className="flex justify-center mt-2 space-x-1">
-        {"★★★★★".split("").map((s, i) => (
-          <span key={i} className="text-gray-300 text-sm sm:text-base">{s}</span>
-        ))}
+      <div className="flex text-yellow-500 text-xs mt-0.5">
+        <FaStar /><FaStar /><FaStar /><FaRegStar /><FaRegStar />
       </div>
     </div>
   );
