@@ -1,28 +1,44 @@
 // @ts-nocheck
-import { useState } from "react";
-import { FaHeart, FaShoppingCart, FaRegStar, FaStar, FaTimes } from "react-icons/fa";
-import { FiChevronRight } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FaHeart, FaShoppingCart } from "react-icons/fa";
 import FavoritesSidebar from "./FavoritesSidebar";
 
-
 export default function Navbar() {
-    const MOCK_FAVORITE_PRODUCTS = [
-    { id: 1, name: "HP AMD Ryzen 3", price: 529.99, image: "" },
-    { id: 2, name: "HP AMD Ryzen 3", price: 529.99, image: "" },
-    // Add more items if needed to show scrolling
-];
     const [cartCount] = useState(3);
-    const [favCount] = useState(MOCK_FAVORITE_PRODUCTS.length); // Use the mock data length
+    const [favCount, setFavCount] = useState(0);
     const [menuOpen, setMenuOpen] = useState(false);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // New state for sidebar
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
 
+    // ✅ Fetch real wishlist count
+    useEffect(() => {
+        const fetchWishlistCount = async () => {
+            try {
+                const token = localStorage.getItem("token"); // assuming you store JWT
+                const res = await fetch("http://localhost:5000/wishlist", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setFavCount(data.length);
+                } else {
+                    console.error("Failed to fetch wishlist");
+                }
+            } catch (err) {
+                console.error("Error fetching wishlist:", err);
+            }
+        };
+        fetchWishlistCount();
+    }, []);
+
     return (
         <>
-            {/* Navbar (Header) Component */}
+            {/* Navbar */}
             <nav className="bg-[#003B5C] text-white px-4 md:px-6 py-3 flex items-center justify-between relative z-30">
 
                 {/* Search bar */}
@@ -39,10 +55,10 @@ export default function Navbar() {
 
                 {/* Desktop Buttons */}
                 <div className="hidden md:flex items-center gap-6">
-                    {/* Favorites Button - Opens Sidebar */}
+                    {/* Favorites Button */}
                     <button
                         title="Favorites"
-                        onClick={toggleSidebar} // <--- CLICK HANDLER ADDED
+                        onClick={toggleSidebar}
                         className="relative hover:text-[#F6A01A] transition text-xl cursor-pointer"
                     >
                         <FaHeart />
@@ -57,7 +73,7 @@ export default function Navbar() {
                         Logout
                     </button>
 
-                    {/* Cart with Badge */}
+                    {/* Cart Button */}
                     <button className="relative text-xl hover:text-[#F6A01A] transition cursor-pointer">
                         <FaShoppingCart />
                         {cartCount > 0 && (
@@ -68,15 +84,17 @@ export default function Navbar() {
                     </button>
                 </div>
 
-                {/* Mobile Menu Button (Toggle mobile menu AND close sidebar if open) */}
+                {/* Mobile Menu */}
                 <button
-                    onClick={() => { setMenuOpen(!menuOpen); setIsSidebarOpen(false); }}
+                    onClick={() => {
+                        setMenuOpen(!menuOpen);
+                        setIsSidebarOpen(false);
+                    }}
                     className="md:hidden text-2xl cursor-pointer"
                 >
                     ☰
                 </button>
 
-                {/* Mobile Dropdown Menu (Close sidebar if menu opens) */}
                 {menuOpen && (
                     <div className="absolute top-14 left-0 w-full bg-[#003B5C] flex flex-col items-center py-4 space-y-4 md:hidden z-50 shadow-md">
                         <div className="flex items-center w-10/12">
@@ -91,9 +109,12 @@ export default function Navbar() {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            {/* Favorites Button - Mobile */}
+                            {/* Favorites (Mobile) */}
                             <button
-                                onClick={() => { setMenuOpen(false); toggleSidebar(); }}
+                                onClick={() => {
+                                    setMenuOpen(false);
+                                    toggleSidebar();
+                                }}
                                 className="relative flex items-center gap-1 hover:text-[#F6A01A] transition-colors cursor-pointer"
                             >
                                 <FaHeart /> Favorites
@@ -103,17 +124,13 @@ export default function Navbar() {
                                     </span>
                                 )}
                             </button>
-                            {/* ... (Other mobile buttons) ... */}
                         </div>
                     </div>
                 )}
             </nav>
 
-            {/* Favorites Sidebar Component */}
-            <FavoritesSidebar
-                isOpen={isSidebarOpen}
-                onClose={toggleSidebar}
-            />
+            {/* Favorites Sidebar */}
+            <FavoritesSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
         </>
     );
 }
