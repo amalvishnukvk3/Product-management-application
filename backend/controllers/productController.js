@@ -28,21 +28,29 @@ exports.get = async (req, res) => {
 
 
 exports.list = async (req, res) => {
-    // query: ?page=1&limit=10&search=hp&subcategory=ID
     const { page = 1, limit = 10, search, subcategory } = req.query;
-    // const q = { name: { $regex: search, $options: 'i' } };
     const q = { title: { $regex: search || ".*", $options: "i" } };
-
-
-    if (subcategory) q.subcategory = subcategory;
+    // if (subcategory) q.subcategory = subcategory;
     const skip = (Number(page) - 1) * Number(limit);
-    const [items, total] = await Promise.all([
+    let [items, total] = await Promise.all([
         // Product.find(q).populate('category subcategory').skip(skip).limit(Number(limit)).lean(),
         Product.find(q).skip(skip).limit(Number(limit)).lean(),
         Product.countDocuments(q)
     ]);
-    // console.log(items);
 
+    function filterItemsBySubcategory(items, subcategories) {
+        return items.filter(item =>
+            subcategories.includes(item.subcategory?.name?.toLowerCase())
+        );
+    }
+    if (subcategory) {
+        const selectedNames = subcategory
+            .split(",")
+            .map(name => name.trim()?.toLowerCase())
+            .filter(Boolean);
+
+        items = filterItemsBySubcategory(items, selectedNames);
+    }
     res.json({ items, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
 };
 

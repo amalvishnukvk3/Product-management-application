@@ -301,8 +301,9 @@ export default function AddProductModal({ onClose }) {
                                 <label className="font-medium text-gray-700">Category :</label>
                                 <Field
                                     as="select"
-                                    name="category"
+                                    name="categoryId" // use _id only
                                     className="w-full border rounded-md p-2 mt-1 cursor-pointer"
+                                    value={values.category._id} // bind _id
                                     onChange={(e) => {
                                         const selectedId = e.target.value;
                                         const selectedCat = categories.find((cat) => cat._id === selectedId);
@@ -328,8 +329,9 @@ export default function AddProductModal({ onClose }) {
                                 <label className="font-medium text-gray-700">Subcategory :</label>
                                 <Field
                                     as="select"
-                                    name="subcategory"
+                                    name="subcategoryId"
                                     className="w-full border rounded-md p-2 mt-1 cursor-pointer"
+                                    value={values.subcategory._id} // bind _id
                                     onChange={(e) => {
                                         const selectedId = e.target.value;
                                         const selectedSub = subcategories.find((sub) => sub._id === selectedId);

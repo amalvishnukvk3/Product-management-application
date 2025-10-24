@@ -1,31 +1,62 @@
+import { useContext } from "react";
+import { ThemeContext } from "../../context/WishlistContext";
+
 // @ts-nocheck
 export default function Pagination() {
-  const pages = [1, 2, 3, 4, 5, "...", 10];
+  const { page, updatePage, totalPages, updateTotalPages } = useContext(ThemeContext);
+
+  const handlePrev = () => {
+    if (page > 1) updatePage(page - 1);
+  };
+
+  const handleNext = () => {
+    if (page < totalPages) updatePage(page + 1);
+  };
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => updatePage(i)}
+          className={`px-3 py-1 rounded-full text-sm ${page === i ? "bg-[#F6A01A] text-white" : "bg-white border"
+            }`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return pages;
+  };
 
   return (
     <div className="flex flex-col md:flex-row justify-between items-center mt-6 gap-2 md:gap-0">
-      
-      {/* Items info */}
-      <p className="text-sm text-gray-500">10 of 456 items</p>
-      
-      {/* Page buttons */}
-      <div className="flex flex-wrap justify-center md:justify-start items-center gap-2">
-        {pages.map((num, i) => (
-          <button
-            key={i}
-            className={`px-3 py-1 rounded-full text-sm md:text-base ${
-              num === 1 ? "bg-[#F6A01A] text-white" : "bg-white border"
-            }`}
-          >
-            {num}
-          </button>
-        ))}
+      <p className="text-sm text-gray-500">
+        Page {page} of {totalPages}
+      </p>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handlePrev}
+          disabled={page === 1}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          Prev
+        </button>
+
+        {renderPageNumbers()}
+
+        <button
+          onClick={handleNext}
+          disabled={page === totalPages}
+          className="px-3 py-1 rounded border disabled:opacity-50"
+        >
+          Next
+        </button>
       </div>
 
-      {/* Rows info */}
-      <p className="text-sm text-gray-500">
-        Show <span className="font-semibold">10 rows</span>
-      </p>
+      <p className="text-sm text-gray-500">Show 10 rows</p>
     </div>
   );
 }

@@ -26,6 +26,14 @@ export const ThemeProvider = ({ children }) => {
   const updateProducts = (products) => {
     setProducts(products);
   };
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const updatePage = (page) => {
+    setPage(page);
+  };
+  const updateTotalPages = (totalPages) => {
+    setTotalPages(totalPages);
+  };
 
   return (
     <ThemeContext.Provider value={{
@@ -33,7 +41,10 @@ export const ThemeProvider = ({ children }) => {
       toggleTheme,
       favoriteCount,
       updateFavoriteCount,
-      products, updateProducts
+      products, updateProducts,
+      page, updatePage,
+      totalPages, updateTotalPages
+
     }}>
       {children}
     </ThemeContext.Provider>

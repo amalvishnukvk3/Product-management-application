@@ -16,21 +16,22 @@ import { ThemeContext } from "../../context/WishlistContext";
 
 const HomePage = () => {
     // const [products, setProducts] = useState([]);
-    const { products, updateProducts } = useContext(ThemeContext);
+    const { products, updateProducts, page, updatePage, totalPages, updateTotalPages } = useContext(ThemeContext);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [limit, setLimit] = useState(9); // Default limit per page
+
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
             try {
-                const res = await fetch("http://localhost:5000/products");
+                const res = await fetch(`http://localhost:5000/products?page=${page}&limit=${limit}`);
                 const data = await res.json();
-                console.log("data", data);
-
-
                 if (res.ok) {
                     updateProducts(data.items || [])
+                    updateTotalPages(data.totalPages || 1);
+
                     // setProducts(data.items || []); // adjust if your backend returns a different key
                 } else {
                     console.error("Failed to fetch products:", data.message);
@@ -45,7 +46,7 @@ const HomePage = () => {
         };
 
         fetchProducts();
-    }, []);
+    }, [page, limit]);
     return (
         <>
             <Navbar />
