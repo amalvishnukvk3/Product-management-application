@@ -1,20 +1,27 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { FaHeart, FaShoppingCart } from "react-icons/fa";
 import FavoritesSidebar from "./FavoritesSidebar";
+import { ThemeContext } from "../../context/WishlistContext";
 
 export default function Navbar() {
-    const [cartCount] = useState(3);
-    const [favCount, setFavCount] = useState(0);
+    const [cartCount] = useState(0);
+    // const [favCount, setFavCount] = useState(0);
     const [menuOpen, setMenuOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const { favoriteCount, updateFavoriteCount } = useContext(ThemeContext);
+
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
+    console.log("favoriteCount",favoriteCount);
+    
 
     // ✅ Fetch real wishlist count
     useEffect(() => {
+        console.log("wo",favoriteCount);
+        
         const fetchWishlistCount = async () => {
             try {
                 const token = localStorage.getItem("token"); // assuming you store JWT
@@ -25,7 +32,8 @@ export default function Navbar() {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setFavCount(data.length);
+                    // setFavCount(data.length);
+                    updateFavoriteCount(data.length)
                 } else {
                     console.error("Failed to fetch wishlist");
                 }
@@ -34,7 +42,7 @@ export default function Navbar() {
             }
         };
         fetchWishlistCount();
-    }, []);
+    }, [favoriteCount,updateFavoriteCount]);
 
     return (
         <>
@@ -62,9 +70,9 @@ export default function Navbar() {
                         className="relative hover:text-[#F6A01A] transition text-xl cursor-pointer"
                     >
                         <FaHeart />
-                        {favCount > 0 && (
+                        {favoriteCount > 0 && (
                             <span className="absolute -top-2 -right-3 bg-[#F6A01A] text-white text-xs font-bold rounded-full px-2">
-                                {favCount}
+                                {favoriteCount}
                             </span>
                         )}
                     </button>

@@ -1,9 +1,12 @@
 // @ts-nocheck
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import EditProductModal from '../components/EditProductModal';
 import { toast } from 'react-toastify'; // assuming you're using react-toastify
+import { ThemeContext } from '../../context/WishlistContext';
+import { FaHeart } from 'react-icons/fa';
+
 
 const ProductDetailsPage = () => {
     const { productId } = useParams();
@@ -12,6 +15,8 @@ const ProductDetailsPage = () => {
     const [error, setError] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [wishlistLoading, setWishlistLoading] = useState(false);
+    const { favoriteCount, updateFavoriteCount } = useContext(ThemeContext);
+
 
     useEffect(() => {
         if (!productId) return;
@@ -54,7 +59,6 @@ const ProductDetailsPage = () => {
         setQuantity(Math.max(1, Math.min(newQty, selectedVariant.qty)));
     };
 
-    // 🧡 Add to Wishlist function
     const handleAddToWishlist = async () => {
         if (!product?._id) return toast.error("Product not found");
 
@@ -75,6 +79,7 @@ const ProductDetailsPage = () => {
             const data = await res.json();
             if (res.ok) {
                 toast.success("Added to wishlist!");
+                updateFavoriteCount(favoriteCount + 1)
             } else {
                 toast.error(data.message || "Failed to add to wishlist");
             }
@@ -192,7 +197,7 @@ const ProductDetailsPage = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-4 mt-8">
+                        <div className="flex flex-wrap items-center gap-4 mt-8">
                             <button
                                 onClick={() => setOpenEditModal(true)}
                                 className="py-3 px-8 rounded-lg bg-[#EDA415] text-white font-semibold text-lg hover:bg-orange-600 transition duration-150 shadow-md"
@@ -204,16 +209,23 @@ const ProductDetailsPage = () => {
                             >
                                 Buy it now
                             </button>
-                            <button
+
+                            {/* Heart Icon for Wishlist */}
+                            <div
                                 onClick={handleAddToWishlist}
-                                disabled={wishlistLoading}
-                                className={`py-3 px-8 rounded-lg font-semibold text-lg transition duration-150 shadow-md ${wishlistLoading
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-blue-600 text-white hover:bg-blue-700"
-                                    }`}
+                                className={`relative cursor-pointer transition-all duration-200 ${wishlistLoading ? 'opacity-50 pointer-events-none' : ''}`}
                             >
-                                {wishlistLoading ? "Adding..." : "Add to Wishlist"}
-                            </button>
+                                <FaHeart
+                                    size={50} // make it big
+                                    // className={`transition-colors duration-300 ${favoriteCount > 0 ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                    className={`transition-colors duration-300 text-gray-400 hover:text-red-500`}
+                                />
+                                {wishlistLoading && (
+                                    <span className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-sm text-white">
+                                        ...
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
