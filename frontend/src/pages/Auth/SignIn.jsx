@@ -40,16 +40,31 @@ const SignIn = () => {
         setSubmitting(false);
     };
 
-    const handleSignIn = ({ email, password }) =>
-        new Promise((resolve) => {
-            setTimeout(() => {
-                if (email === "test@example.com" && password === "123456") {
-                    resolve({ success: true, token: "fake-jwt-token" });
-                } else {
-                    resolve({ success: false, message: "Invalid credentials" });
-                }
-            }, 1000);
-        });
+    const handleSignIn = async ({ email, password }) => {
+        try {
+            const res = await fetch("http://localhost:5000/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Save JWT token if needed
+                localStorage.setItem("token", data.token);
+                return { success: true, token: data.token, user: data.user };
+            } else {
+                return { success: false, message: data.message || "Invalid credentials" };
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            return { success: false, message: "Something went wrong. Try again later." };
+        }
+    };
+
 
     return (
         <div className="flex flex-col md:flex-row h-screen font-[Poppins]">

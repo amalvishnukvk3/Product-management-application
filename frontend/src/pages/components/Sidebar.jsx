@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaBars, FaChevronRight, FaChevronDown } from "react-icons/fa";
 
 export default function Sidebar() {
@@ -22,12 +22,48 @@ export default function Sidebar() {
         : [...prev, item]
     );
   };
+  const [categories, setCategories] = useState({}); // { categoryName: [subcat1, subcat2, ...] }
 
-  const categories = {
-    Laptop: ["Hp", "Dell", "Lenovo"],
-    Tablet: ["iPad", "Samsung", "Lenovo"],
-    Headphones: ["Bose", "Sony", "JBL"],
-  };
+
+  useEffect(() => {
+    const fetchCategoryData = async () => {
+      try {
+        // Fetch all categories
+        const catRes = await fetch("http://localhost:5000/categories");
+        const catData = await catRes.json();
+
+        if (!catRes.ok) {
+          console.error("Failed to fetch categories");
+          return;
+        }
+
+        const formatted = {};
+
+        for (const cat of catData || []) {
+          const subRes = await fetch(
+            `http://localhost:5000/subcategories/category/${cat._id}`
+          );
+          const subData = await subRes.json();
+
+          if (subRes.ok) {
+            formatted[cat.name] = subData.map((sub) => sub.name);
+          } else {
+            formatted[cat.name] = [];
+          }
+        }
+
+        setCategories(formatted);
+      } catch (error) {
+        console.error("Error fetching categories/subcategories:", error);
+      } finally {
+        // setLoading(false);
+      }
+    };
+
+    fetchCategoryData();
+  }, []);
+
+
 
   return (
     <>
@@ -54,7 +90,7 @@ export default function Sidebar() {
             <li
               key={category}
               className="cursor-pointer select-none"
-              // onClick={() => toggleCategory(category)}
+            // onClick={() => toggleCategory(category)}
             >
               {/* Category header */}
               <div className="flex justify-between items-center" onClick={() => toggleCategory(category)}>

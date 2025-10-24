@@ -1,11 +1,62 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
 import { Formik, Field, Form, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
 export default function AddProductModal({ onClose }) {
     const [images, setImages] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [subcategories, setSubcategories] = useState([]); // subcategories for selected category
+    const [selectedCategoryId, setSelectedCategoryId] = useState("");
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch("http://localhost:5000/categories");
+                const data = await res.json();
+                if (res.ok) {
+                    setCategories(data || []);
+                } else {
+                    console.error("Failed to fetch categories", data.message);
+                }
+            } catch (err) {
+                console.error("Error fetching categories:", err);
+            } finally {
+                // setLoadingCategories(false);
+            }
+        };
+
+        fetchCategories();
+    }, []);
+
+
+    useEffect(() => {
+        if (selectedCategoryId.trim() === "") return;
+        const fetchSubcategories = async () => {
+            // setLoadingSubcategories(true);
+            try {
+                const res = await fetch(
+                    `http://localhost:5000/subcategories/category/${selectedCategoryId}`
+                );
+                const data = await res.json();
+                if (res.ok) {
+                    setSubcategories(data || []);
+                } else {
+                    console.error("Failed to fetch subcategories", data.message);
+                }
+            } catch (err) {
+                console.error("Error fetching subcategories:", err);
+            } finally {
+                // setLoadingSubcategories(false);
+            }
+        };
+
+        fetchSubcategories();
+    }, [selectedCategoryId]);
+
+    console.log("selectedCategoryId", selectedCategoryId);
+
+
 
     const validationSchema = Yup.object().shape({
         title: Yup.string().required("Title is required"),
@@ -21,33 +72,101 @@ export default function AddProductModal({ onClose }) {
                     .required("Quantity is required"),
             })
         ),
-        subCategory: Yup.string().required("Subcategory is required"),
+        // subCategory: Yup.string().required("Subcategory is required"),
+        // category: Yup.string().required("category is required"),
+        category: Yup.object()
+            .shape({
+                _id: Yup.string().required("Category ID required"),
+                name: Yup.string().required("Category name required"),
+            })
+            .required("Category is required"),
+        subCategory: Yup.object()
+            .shape({
+                _id: Yup.string().required("Subcategory ID required"),
+                name: Yup.string().required("Subcategory name required"),
+            }),
         description: Yup.string().required("Description is required"),
         images: Yup.array()
             .min(1, "At least 1 image is required")
             .max(3, "Maximum 3 images allowed"),
     });
 
-    const handleSubmit = (values, { resetForm }) => {
-        console.log("Form values:", values);
-        alert("Product added successfully!");
-        resetForm(); // Clear form after submit
-        setImages([]);
-        onClose();
+    const handleSubmit = async (values, { resetForm }) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            // Prepare payload based on your form structure
+            const payload = {
+                title: values.title,
+                category: values.category,        // category _id
+                subcategory: values.subcategory,  // subcategory _id
+                description: values.description,
+                images,                           // image array from state
+                variants: values.variants,        // e.g. [{ ram, price, qty }]
+            };
+
+            const res = await fetch("http://localhost:5000/products", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Product added successfully!");
+                resetForm();
+                setImages([]);
+                onClose();
+            } else {
+                alert(data.message || "Failed to add product.");
+            }
+        } catch (error) {
+            console.error("Error adding product:", error);
+            alert("Something went wrong. Please try again later.");
+        }
     };
 
 
-    const handleImageUpload = (e, setFieldValue, values) => {
+    const handleImageUpload = async (e, setFieldValue, values) => {
         const files = Array.from(e.target.files);
         if (values.images.length + files.length > 3) {
             alert("Maximum 3 images allowed");
             return;
         }
-        const newImages = files.map((f) => URL.createObjectURL(f));
-        const allImages = [...values.images, ...newImages];
-        setFieldValue("images", allImages);
-        setImages(allImages);
+        try {
+            const uploadedImages = [];
+
+            for (const file of files) {
+                const formData = new FormData();
+                formData.append("file", file);
+                formData.append("upload_preset", "my_uploads");
+                const res = await fetch(`https://api.cloudinary.com/v1_1/dwbbsotgs/upload`, {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    uploadedImages.push(data.secure_url);
+                } else {
+                    console.error("Cloudinary upload error:", data);
+                }
+            }
+
+            // Merge new uploaded URLs with existing ones
+            const allImages = [...values.images, ...uploadedImages];
+            setFieldValue("images", allImages);
+            setImages(allImages);
+        } catch (error) {
+            console.error("Image upload failed:", error);
+            alert("Failed to upload image(s). Please try again.");
+        }
     };
+    console.log("images", images);
 
     const handleRemoveImage = (index, setFieldValue, values) => {
         const updatedImages = values.images.filter((_, i) => i !== index);
@@ -73,12 +192,13 @@ export default function AddProductModal({ onClose }) {
                     initialValues={{
                         title: "",
                         variants: [{ ram: "", price: "", qty: 1 }],
-                        subCategory: "",
+                        category: { _id: "", name: "" },
+                        subCategory: { _id: "", name: "" },
                         description: "",
                         images: [],
                     }}
                     validationSchema={validationSchema}
-                    onSubmit={handleSubmit} 
+                    onSubmit={handleSubmit}
 
                 >
                     {({ values, setFieldValue }) => (
@@ -176,25 +296,58 @@ export default function AddProductModal({ onClose }) {
                                 </FieldArray>
                             </div>
 
+                            {/* category */}
+                            <div>
+                                <label className="font-medium text-gray-700">Category :</label>
+                                <Field
+                                    as="select"
+                                    name="category"
+                                    className="w-full border rounded-md p-2 mt-1 cursor-pointer"
+                                    onChange={(e) => {
+                                        const selectedId = e.target.value;
+                                        const selectedCat = categories.find((cat) => cat._id === selectedId);
+                                        if (selectedCat) {
+                                            setFieldValue("category", { _id: selectedCat._id, name: selectedCat.name });
+                                            setSelectedCategoryId(selectedCat._id);
+                                        }
+                                    }}
+                                >
+                                    <option value="">Select Category</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat._id} value={cat._id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </Field>
+                                <ErrorMessage name="category.name" component="div" className="text-red-500 text-sm" />
+                            </div>
+
+
                             {/* Subcategory */}
                             <div>
-                                <label className="font-medium text-gray-700">Sub category :</label>
+                                <label className="font-medium text-gray-700">Subcategory :</label>
                                 <Field
                                     as="select"
                                     name="subCategory"
                                     className="w-full border rounded-md p-2 mt-1 cursor-pointer"
+                                    onChange={(e) => {
+                                        const selectedId = e.target.value;
+                                        const selectedSub = subcategories.find((sub) => sub._id === selectedId);
+                                        if (selectedSub) {
+                                            setFieldValue("subCategory", { _id: selectedSub._id, name: selectedSub.name });
+                                        }
+                                    }}
                                 >
-                                    <option value="">Select subcategory</option>
-                                    <option value="HP">HP</option>
-                                    <option value="Dell">Dell</option>
-                                    <option value="Lenovo">Lenovo</option>
+                                    <option value="">Select Subcategory</option>
+                                    {subcategories.map((sub) => (
+                                        <option key={sub._id} value={sub._id}>
+                                            {sub.name}
+                                        </option>
+                                    ))}
                                 </Field>
-                                <ErrorMessage
-                                    name="subCategory"
-                                    component="div"
-                                    className="text-red-500 text-sm"
-                                />
+                                <ErrorMessage name="subCategory.name" component="div" className="text-red-500 text-sm" />
                             </div>
+
 
                             {/* Description */}
                             <div>
