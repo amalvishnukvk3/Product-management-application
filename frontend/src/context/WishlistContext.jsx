@@ -13,7 +13,7 @@ export const ThemeProvider = ({ children }) => {
   };
 
   // Favorite count state
-  
+
   const [favoriteCount, setFavoriteCount] = useState(0);
 
   // Function to update favorite count
@@ -21,12 +21,19 @@ export const ThemeProvider = ({ children }) => {
     setFavoriteCount(count);
   };
 
+  const [products, setProducts] = useState([]);
+  // Function to update favorite count
+  const updateProducts = (products) => {
+    setProducts(products);
+  };
+
   return (
     <ThemeContext.Provider value={{
       theme,
       toggleTheme,
       favoriteCount,
-      updateFavoriteCount
+      updateFavoriteCount,
+      products, updateProducts
     }}>
       {children}
     </ThemeContext.Provider>

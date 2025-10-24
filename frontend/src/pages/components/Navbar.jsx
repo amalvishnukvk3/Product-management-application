@@ -6,22 +6,22 @@ import { ThemeContext } from "../../context/WishlistContext";
 
 export default function Navbar() {
     const [cartCount] = useState(0);
-    // const [favCount, setFavCount] = useState(0);
     const [menuOpen, setMenuOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const { favoriteCount, updateFavoriteCount } = useContext(ThemeContext);
-
+    const { favoriteCount, updateFavoriteCount, products, updateProducts } = useContext(ThemeContext);
+    // const [products, setProducts] = useState([]);
+    const [search, setSearch] = useState("");
 
     const toggleSidebar = () => {
         setIsSidebarOpen(!isSidebarOpen);
     };
-    console.log("favoriteCount",favoriteCount);
-    
+    console.log("favoriteCount", favoriteCount);
+
 
     // ✅ Fetch real wishlist count
     useEffect(() => {
-        console.log("wo",favoriteCount);
-        
+        console.log("wo", favoriteCount);
+
         const fetchWishlistCount = async () => {
             try {
                 const token = localStorage.getItem("token"); // assuming you store JWT
@@ -42,7 +42,30 @@ export default function Navbar() {
             }
         };
         fetchWishlistCount();
-    }, [favoriteCount,updateFavoriteCount]);
+    }, [favoriteCount, updateFavoriteCount]);
+
+    const fetchProducts = async (searchTerm = "") => {
+        try {
+            const params = new URLSearchParams({
+                search: searchTerm,
+                page: 1,
+                limit: 10
+            });
+
+            const response = await fetch(`http://localhost:5000/products?${params.toString()}`);
+            if (!response.ok) throw new Error("Network response was not ok");
+
+            const data = await response.json();
+            updateProducts(data.items);
+            // setPage(res.data.page);
+            // setTotalPages(res.data.pages);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    console.log("products", products);
+
 
     return (
         <>
@@ -51,14 +74,23 @@ export default function Navbar() {
 
                 {/* Search bar */}
                 <div className="hidden md:flex items-center w-1/2 max-w-md">
-                    <input
-                        type="text"
-                        placeholder="Search any things"
-                        className="w-full p-2 rounded-l-md bg-[#ffffff] text-gray-800 focus:outline-none"
-                    />
-                    <button className="bg-[#F6A01A] px-4 py-2 rounded-r-md font-semibold hover:bg-[#e59500] transition cursor-pointer">
-                        Search
-                    </button>
+                    <form className="flex mb-4" onSubmit={(e) => e.preventDefault()}>
+                        <input
+                            type="text"
+                            placeholder="Search anything"
+                            className="w-full p-2 rounded-l-md bg-[#ffffff] text-gray-800 focus:outline-none"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                        <button
+                            type="button" // important: prevent form submit
+                            className="bg-[#F6A01A] px-4 py-2 rounded-r-md font-semibold hover:bg-[#e59500] transition cursor-pointer"
+                            onClick={() => fetchProducts(search)} // fetch products on click
+                        >
+                            Search
+                        </button>
+                    </form>
+
                 </div>
 
                 {/* Desktop Buttons */}

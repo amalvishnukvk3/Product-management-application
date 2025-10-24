@@ -4,7 +4,8 @@ import ProductCard from "../components/ProductCard";
 import Pagination from "../components/Pagination";
 import Navbar from "../components/Navbar";
 import SubHeader from "../components/SubHeader";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { ThemeContext } from "../../context/WishlistContext";
 
 // const products = Array(6).fill({
 //     id: "4124564%$DFR3",
@@ -14,7 +15,9 @@ import { useEffect, useState } from "react";
 // });
 
 const HomePage = () => {
-    const [products, setProducts] = useState([]);
+    // const [products, setProducts] = useState([]);
+    const { products, updateProducts } = useContext(ThemeContext);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     useEffect(() => {
@@ -27,7 +30,8 @@ const HomePage = () => {
 
 
                 if (res.ok) {
-                    setProducts(data.items || []); // adjust if your backend returns a different key
+                    updateProducts(data.items || [])
+                    // setProducts(data.items || []); // adjust if your backend returns a different key
                 } else {
                     console.error("Failed to fetch products:", data.message);
                     setError(data.message || "Failed to fetch products");
