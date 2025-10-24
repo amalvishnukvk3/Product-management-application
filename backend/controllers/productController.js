@@ -10,6 +10,8 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
     const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    console.log(product);
+    
     res.json(product);
 };
 

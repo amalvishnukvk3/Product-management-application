@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import { useState, useEffect } from "react";
 import { FaTimes } from "react-icons/fa";
@@ -26,7 +25,7 @@ export default function EditProductModal({ onClose, product }) {
     }, []);
 
     useEffect(() => {
-        if (!selectedCategoryId.trim()) return;
+        if (!selectedCategoryId?.trim()) return;
         const fetchSubcategories = async () => {
             try {
                 const res = await fetch(
@@ -56,8 +55,18 @@ export default function EditProductModal({ onClose, product }) {
                     .required("Quantity is required"),
             })
         ),
-        subCategory: Yup.string().required("Subcategory is required"),
-        category: Yup.string().required("Category is required"),
+        category: Yup.object()
+            .shape({
+                _id: Yup.string().required("Category ID is required"),
+                name: Yup.string().required("Category name is required"),
+            })
+            .required("Category is required"),
+        subcategory: Yup.object()
+            .shape({
+                _id: Yup.string().required("Subcategory ID is required"),
+                name: Yup.string().required("Subcategory name is required"),
+            })
+            .required("Subcategory is required"),
         description: Yup.string().required("Description is required"),
         images: Yup.array()
             .min(1, "At least 1 image is required")
@@ -69,8 +78,8 @@ export default function EditProductModal({ onClose, product }) {
             const token = localStorage.getItem("token");
             const payload = {
                 title: values.title,
-                category: values.category,
-                subcategory: values.subCategory,
+                category: values.category, // now full object {_id, name}
+                subcategory: values.subcategory, // now full object {_id, name}
                 description: values.description,
                 images,
                 variants: values.variants,
@@ -110,12 +119,10 @@ export default function EditProductModal({ onClose, product }) {
                 const formData = new FormData();
                 formData.append("file", file);
                 formData.append("upload_preset", "my_uploads");
-
-                const res = await fetch(
-                    `https://api.cloudinary.com/v1_1/dwbbsotgs/upload`,
-                    { method: "POST", body: formData }
-                );
-
+                const res = await fetch(`https://api.cloudinary.com/v1_1/dwbbsotgs/upload`, {
+                    method: "POST",
+                    body: formData,
+                });
                 const data = await res.json();
                 if (res.ok) uploadedImages.push(data.secure_url);
             }
@@ -152,8 +159,8 @@ export default function EditProductModal({ onClose, product }) {
                     initialValues={{
                         title: product?.title || "",
                         variants: product?.variants || [{ ram: "", price: "", qty: 1 }],
-                        subCategory: product?.subcategory|| "",
-                        category: product?.category || "",
+                        category: product?.category || { _id: "", name: "" },
+                        subcategory: product?.subcategory || { _id: "", name: "" },
                         description: product?.description || "",
                         images: product?.images || [],
                     }}
@@ -197,11 +204,6 @@ export default function EditProductModal({ onClose, product }) {
                                                             placeholder="RAM"
                                                             className="border rounded-md p-2 w-full"
                                                         />
-                                                        <ErrorMessage
-                                                            name={`variants[${i}].ram`}
-                                                            component="div"
-                                                            className="text-red-500 text-sm"
-                                                        />
                                                     </div>
                                                     <div className="flex-1 min-w-[90px]">
                                                         <Field
@@ -210,11 +212,6 @@ export default function EditProductModal({ onClose, product }) {
                                                             placeholder="Price"
                                                             className="border rounded-md p-2 w-full"
                                                         />
-                                                        <ErrorMessage
-                                                            name={`variants[${i}].price`}
-                                                            component="div"
-                                                            className="text-red-500 text-sm"
-                                                        />
                                                     </div>
                                                     <div className="flex items-center gap-2 min-w-[90px]">
                                                         <label>QTY:</label>
@@ -222,11 +219,6 @@ export default function EditProductModal({ onClose, product }) {
                                                             type="number"
                                                             name={`variants[${i}].qty`}
                                                             className="border rounded-md p-2 w-16"
-                                                        />
-                                                        <ErrorMessage
-                                                            name={`variants[${i}].qty`}
-                                                            component="div"
-                                                            className="text-red-500 text-sm"
                                                         />
                                                     </div>
                                                     {i > 0 && (
@@ -257,15 +249,20 @@ export default function EditProductModal({ onClose, product }) {
                                 <label className="font-medium text-gray-700">Category :</label>
                                 <Field
                                     as="select"
-                                    name="category"
+                                    name="category.name"
                                     className="w-full border rounded-md p-2 mt-1 cursor-pointer"
                                     onChange={(e) => {
                                         const selectedName = e.target.value;
-                                        setFieldValue("category", selectedName);
                                         const selectedCat = categories.find(
                                             (cat) => cat.name === selectedName
                                         );
-                                        if (selectedCat) setSelectedCategoryId(selectedCat._id);
+                                        if (selectedCat) {
+                                            setFieldValue("category", {
+                                                _id: selectedCat._id,
+                                                name: selectedCat.name,
+                                            });
+                                            setSelectedCategoryId(selectedCat._id);
+                                        }
                                     }}
                                 >
                                     <option value="">Select Category</option>
@@ -276,7 +273,7 @@ export default function EditProductModal({ onClose, product }) {
                                     ))}
                                 </Field>
                                 <ErrorMessage
-                                    name="category"
+                                    name="category.name"
                                     component="div"
                                     className="text-red-500 text-sm"
                                 />
@@ -287,8 +284,20 @@ export default function EditProductModal({ onClose, product }) {
                                 <label className="font-medium text-gray-700">Subcategory :</label>
                                 <Field
                                     as="select"
-                                    name="subCategory"
+                                    name="subcategory.name"
                                     className="w-full border rounded-md p-2 mt-1 cursor-pointer"
+                                    onChange={(e) => {
+                                        const selectedName = e.target.value;
+                                        const selectedSub = subcategories.find(
+                                            (sub) => sub.name === selectedName
+                                        );
+                                        if (selectedSub) {
+                                            setFieldValue("subcategory", {
+                                                _id: selectedSub._id,
+                                                name: selectedSub.name,
+                                            });
+                                        }
+                                    }}
                                 >
                                     <option value="">Select Subcategory</option>
                                     {subcategories.map((cat) => (
@@ -298,7 +307,7 @@ export default function EditProductModal({ onClose, product }) {
                                     ))}
                                 </Field>
                                 <ErrorMessage
-                                    name="subCategory"
+                                    name="subcategory.name"
                                     component="div"
                                     className="text-red-500 text-sm"
                                 />
@@ -320,7 +329,7 @@ export default function EditProductModal({ onClose, product }) {
                                 />
                             </div>
 
-                            {/* Image Upload */}
+                            {/* Images */}
                             <div>
                                 <label className="font-medium text-gray-700">Upload image:</label>
                                 <div className="flex gap-2 mt-2 flex-wrap">
@@ -357,11 +366,6 @@ export default function EditProductModal({ onClose, product }) {
                                         </label>
                                     )}
                                 </div>
-                                <ErrorMessage
-                                    name="images"
-                                    component="div"
-                                    className="text-red-500 text-sm"
-                                />
                             </div>
 
                             {/* Footer */}
@@ -387,4 +391,3 @@ export default function EditProductModal({ onClose, product }) {
         </div>
     );
 }
-

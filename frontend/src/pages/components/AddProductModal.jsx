@@ -80,7 +80,7 @@ export default function AddProductModal({ onClose }) {
                 name: Yup.string().required("Category name required"),
             })
             .required("Category is required"),
-        subCategory: Yup.object()
+        subcategory: Yup.object()
             .shape({
                 _id: Yup.string().required("Subcategory ID required"),
                 name: Yup.string().required("Subcategory name required"),
@@ -193,7 +193,7 @@ export default function AddProductModal({ onClose }) {
                         title: "",
                         variants: [{ ram: "", price: "", qty: 1 }],
                         category: { _id: "", name: "" },
-                        subCategory: { _id: "", name: "" },
+                        subcategory: { _id: "", name: "" },
                         description: "",
                         images: [],
                     }}
@@ -328,13 +328,13 @@ export default function AddProductModal({ onClose }) {
                                 <label className="font-medium text-gray-700">Subcategory :</label>
                                 <Field
                                     as="select"
-                                    name="subCategory"
+                                    name="subcategory"
                                     className="w-full border rounded-md p-2 mt-1 cursor-pointer"
                                     onChange={(e) => {
                                         const selectedId = e.target.value;
                                         const selectedSub = subcategories.find((sub) => sub._id === selectedId);
                                         if (selectedSub) {
-                                            setFieldValue("subCategory", { _id: selectedSub._id, name: selectedSub.name });
+                                            setFieldValue("subcategory", { _id: selectedSub._id, name: selectedSub.name });
                                         }
                                     }}
                                 >
@@ -345,7 +345,7 @@ export default function AddProductModal({ onClose }) {
                                         </option>
                                     ))}
                                 </Field>
-                                <ErrorMessage name="subCategory.name" component="div" className="text-red-500 text-sm" />
+                                <ErrorMessage name="subcategory.name" component="div" className="text-red-500 text-sm" />
                             </div>
 
 

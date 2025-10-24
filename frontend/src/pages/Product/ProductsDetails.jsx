@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import EditProductModal from '../components/EditProductModal';
-
+import { toast } from 'react-toastify'; // assuming you're using react-toastify
 
 const ProductDetailsPage = () => {
     const { productId } = useParams();
@@ -11,6 +11,7 @@ const ProductDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
 
     useEffect(() => {
         if (!productId) return;
@@ -21,7 +22,6 @@ const ProductDetailsPage = () => {
                 const data = await res.json();
                 if (res.ok) {
                     setProduct(data);
-                    // Set initial selected variant
                     if (data?.variants?.length > 0) {
                         setSelectedVariant(data.variants[0]);
                         setQuantity(1);
@@ -39,23 +39,55 @@ const ProductDetailsPage = () => {
         fetchProduct();
     }, [productId]);
 
-    // State for selected variant and quantity
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [quantity, setQuantity] = useState(1);
 
     const handleVariantSelect = (ram) => {
         const variant = product.variants.find(v => v.ram === ram);
         setSelectedVariant(variant);
-        setQuantity(1); // reset quantity when variant changes
+        setQuantity(1);
     };
 
     const handleQuantityChange = (delta) => {
         if (!selectedVariant) return;
         const newQty = quantity + delta;
-        // Ensure quantity is at least 1 and at most variant qty
         setQuantity(Math.max(1, Math.min(newQty, selectedVariant.qty)));
     };
 
+    // 🧡 Add to Wishlist function
+    const handleAddToWishlist = async () => {
+        if (!product?._id) return toast.error("Product not found");
+
+        setWishlistLoading(true);
+        try {
+            const res = await fetch("http://localhost:5000/wishlist/add", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("token")}`, // if you're using JWT
+                },
+                body: JSON.stringify({
+                    productId: product._id,
+                    variant: selectedVariant || product.variants[0],
+                }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                toast.success("Added to wishlist!");
+            } else {
+                toast.error(data.message || "Failed to add to wishlist");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Something went wrong");
+        } finally {
+            setWishlistLoading(false);
+        }
+    };
+
+    if (loading) return <div className="p-8 text-center">Loading...</div>;
+    if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
     if (!product) return <div className="p-8 text-center">Product not found.</div>;
 
     return (
@@ -141,7 +173,9 @@ const ProductDetailsPage = () => {
                                     +
                                 </button>
                             </div>
-
+                            <span className="text-gray-500 text-sm">
+                                (max: {selectedVariant?.qty ?? product?.variants?.[0]?.qty ?? 0})
+                            </span>
                         </div>
 
                         {/* Availability */}
@@ -158,18 +192,33 @@ const ProductDetailsPage = () => {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex space-x-4 mt-8">
-                            <button onClick={() => setOpenEditModal(true)}
-                                className="py-3 px-8 rounded-lg bg-[#EDA415] text-white font-semibold text-lg hover:bg-orange-600 transition duration-150 shadow-md">
+                        <div className="flex flex-wrap gap-4 mt-8">
+                            <button
+                                onClick={() => setOpenEditModal(true)}
+                                className="py-3 px-8 rounded-lg bg-[#EDA415] text-white font-semibold text-lg hover:bg-orange-600 transition duration-150 shadow-md"
+                            >
                                 Edit product
                             </button>
-                            <button className="py-3 px-8 rounded-lg bg-[#EDA415] text-gray-900 font-semibold text-lg hover:bg-yellow-600 transition duration-150 shadow-md">
+                            <button
+                                className="py-3 px-8 rounded-lg bg-[#EDA415] text-gray-900 font-semibold text-lg hover:bg-yellow-600 transition duration-150 shadow-md"
+                            >
                                 Buy it now
+                            </button>
+                            <button
+                                onClick={handleAddToWishlist}
+                                disabled={wishlistLoading}
+                                className={`py-3 px-8 rounded-lg font-semibold text-lg transition duration-150 shadow-md ${wishlistLoading
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                                    }`}
+                            >
+                                {wishlistLoading ? "Adding..." : "Add to Wishlist"}
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
+
             {openEditModal && (
                 <EditProductModal onClose={() => setOpenEditModal(false)} product={product} />
             )}
