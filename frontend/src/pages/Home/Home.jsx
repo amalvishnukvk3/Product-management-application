@@ -1,27 +1,23 @@
 // @ts-nocheck
-import Sidebar from "../components/Sidebar";
-import ProductCard from "../components/ProductCard";
-import Pagination from "../components/Pagination";
-import Navbar from "../components/Navbar";
-import SubHeader from "../components/SubHeader";
+import Sidebar from "../../components/components/Sidebar";
+import ProductCard from "../../components/components/ProductCard";
+import Pagination from "../../components/components/Pagination";
+import Navbar from "../../components/components/Navbar";
+import SubHeader from "../../components/components/SubHeader";
 import { useContext, useEffect, useState } from "react";
 import { ThemeContext } from "../../context/WishlistContext";
 
-// const products = Array(6).fill({
-//     id: "4124564%$DFR3",
-//     image: "https://m.media-amazon.com/images/I/510uTHyDqGL.jpg",
-//     name: "HP AMD Ryzen 3",
-//     price: "529.99",
-// });
+
 
 const HomePage = () => {
-    // const [products, setProducts] = useState([]);
+   
     const { products, updateProducts, page, updatePage, totalPages, updateTotalPages } = useContext(ThemeContext);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [limit, setLimit] = useState(9); // Default limit per page
 
+    
     useEffect(() => {
         const fetchProducts = async () => {
             setLoading(true);
@@ -32,7 +28,6 @@ const HomePage = () => {
                     updateProducts(data.items || [])
                     updateTotalPages(data.totalPages || 1);
 
-                    // setProducts(data.items || []); // adjust if your backend returns a different key
                 } else {
                     console.error("Failed to fetch products:", data.message);
                     setError(data.message || "Failed to fetch products");

@@ -1,14 +1,13 @@
 // @ts-nocheck
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import SignIn from "./pages/Auth/SignIn";
 import SignUp from "./pages/Auth/SignUp";
 import "react-toastify/dist/ReactToastify.css";
 import HomePage from "./pages/Home/Home";
 import ProductDetailsPage from "./pages/Product/ProductsDetails";
-import ProtectedRoute from "./pages/components/ProtectedRoute";
-import PublicRoute from "./pages/components/PublicRoute";
-// import ProtectedRoute from "./components/ProtectedRoute";
-// import PublicRoute from "./components/PublicRoute";
+import ProtectedRoute from "./components/components/ProtectedRoute";
+import PublicRoute from "./components/components/PublicRoute";
+
 
 function App() {
   return (
@@ -33,8 +32,10 @@ function App() {
         />
 
         {/* Protected Routes (only visible if logged in) */}
+<Route path="/" element={<Navigate to="/home" replace />} />
+
         <Route
-          path="/"
+          path="home"
           element={
             <ProtectedRoute>
               <HomePage />

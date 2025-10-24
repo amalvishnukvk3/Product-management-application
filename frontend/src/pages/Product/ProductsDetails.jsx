@@ -1,8 +1,8 @@
 // @ts-nocheck
 import React, { useContext, useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import EditProductModal from '../components/EditProductModal';
+import Navbar from '../../components/components/Navbar';
+import EditProductModal from '../../components/components/EditProductModal';
 import { toast } from 'react-toastify'; // assuming you're using react-toastify
 import { ThemeContext } from '../../context/WishlistContext';
 import { FaHeart } from 'react-icons/fa';

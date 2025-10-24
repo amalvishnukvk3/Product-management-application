@@ -109,9 +109,9 @@ export default function Navbar() {
                         )}
                     </button>
 
-                    <button className="hover:text-[#F6A01A] transition font-semibold cursor-pointer">
+                    {/* <button className="hover:text-[#F6A01A] transition font-semibold cursor-pointer">
                         Logout
-                    </button>
+                    </button> */}
 
                     {/* Cart Button */}
                     <button className="relative text-xl hover:text-[#F6A01A] transition cursor-pointer">

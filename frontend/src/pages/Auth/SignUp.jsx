@@ -55,8 +55,9 @@ const SignUp = () => {
 
             if (res.ok) {
                 // Save JWT token if needed
-                localStorage.setItem("token", data.token);
-                return { success: true, token: data.token, user: data.user };
+                // localStorage.setItem("token", data.token);
+                toast.success("Signup successful! Please login")
+                return { success: true, };
             } else {
                 return { success: false, message: data.message || "Invalid credentials" };
             }

@@ -63,7 +63,7 @@ export default function ProductCard({ product }) {
   const imageUrl = product?.images?.[0];
 
   return (
-    <div className="relative border rounded-xl p-0 shadow-sm hover:shadow-md transition mx-auto cursor-pointer w-full max-w-xs h-60">
+    <div className="relative border border-blue-300 rounded-xl p-0 shadow-sm hover:shadow-md transition mx-auto cursor-pointer w-full max-w-xs h-60 ">
 
       {/* Wishlist Heart */}
       <div className="absolute top-3 right-5 z-10" onClick={handleAddToWishlist}>
@@ -80,7 +80,7 @@ export default function ProductCard({ product }) {
         <img
           src={imageUrl}
           alt={title}
-          className="mx-auto h-24 object-contain mb-4"
+         className="mx-auto h-25 w-auto max-w-full object-cover mb-4 rounded-lg transition-all duration-300 hover:scale-140"
         />
         <h3 className="text-gray-900 font-normal text-lg text-left ml-0.5 mt-2">
           {title}
